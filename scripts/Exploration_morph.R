@@ -60,6 +60,8 @@ ggplot(data=morph.data, aes(mass)) +
   ylab("Number of Males")+
   ggtitle("Distribution of Body Masses of Male Fiddler Crabs")
 
+favstats(~mass, data=morph.data)
+
 
 #plotting claw volume against body mass
 ggplot()+
@@ -147,7 +149,7 @@ ggplot(long.morph.data, aes(x=log(mass), y=log(morph.value))) +
 ggplot(new.long.morph.data2, aes(x=Hand, y=morph.value, fill=Hand)) +
   geom_boxplot() +
   ylab("Morphological Value") + 
-  ggtitle("Handidness Across Morphological Traits")+
+  ggtitle("Handedness Across Morphological Traits")+
   facet_wrap(~morph.descriptor)+
   scale_fill_discrete(name="Major Cheliped",
                       breaks=c("R", "L"),
