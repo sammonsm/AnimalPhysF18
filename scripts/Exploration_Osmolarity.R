@@ -1,3 +1,4 @@
+#Top
 #Exploration for Osmolarity experiment in Uca and Spider Crabs
 
 #Libaries
@@ -14,20 +15,6 @@ uca_osmo <- read.csv("./data/Uca_Osmolarity_2018.csv", na.strings = c("","NA"))
 View(uca_osmo)
 spider_osmo <- read.csv("./data/Spider_crab_osmolarity_2018.csv", na.strings = c("","NA"))
 View(spider_osmo)
-#Temporary Uca Modified
-uca_acute <- read.csv("./data/uca.mega.modified.csv", na.strings = c("", "NA"))
-View(uca_acute)
-
-#Uca Acute response over time
-ggplot(uca_acute, aes(x=before.post, y=Osmolarity), fill= Salinity)+
-  geom_boxplot()+
-  facet_wrap(~Salinity)+
-  xlab("Uca Hemolypmh Pre and Post Salinity Treatment")+
-  theme_bw()
-
-#Stats
-fav_stats(uca_acute$Osmolarity)
-summary(uca_acute)
 
 
 #New column with percent change
