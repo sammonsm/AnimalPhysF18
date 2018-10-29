@@ -1,0 +1,17 @@
+Sex,Mass,Salinity,Treatment,Osmolarity,before.post
+M,1.82,20,Acute,890,before
+M,1.8,20,Acute,880,post
+M,1.64,100,Acute,882,before
+M,1.73,100,Acute,868,post
+M,2.53,20,Acute,902,before
+F,1.49,20,Acute,862,post
+M,2.16,100,Acute,939,before
+F,1.27,100,Acute,876,post
+M,1.97,20,Acute,905,before
+F,1.16,20,Acute,898,post
+M,,100,Acute,900,before
+F,,100,Acute,872,post
+F,1.527,20,Acute,891,before
+F,1.472,20,Acute,879,post
+F,1.856,100,Acute,899,before
+M,3.177,100,Acute,914,post
