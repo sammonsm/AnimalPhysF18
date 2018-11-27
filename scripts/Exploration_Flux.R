@@ -3,7 +3,10 @@
 #Import data
 flux <- read.csv("./data/Flux_Data_Biol244_102318 - Sheet1.csv")
 View(flux)
-
+ion_efflux <- read.csv("./data/Efflux datasheet - Sheet1.csv")
+View(ion_efflux)
+influx<- read.csv("./data/flux_Rb - Sheet 1.csv")
+View(influx)
 #Libraries
 library(ggplot2)
 library(lattice)
@@ -20,15 +23,6 @@ flux$team = str_sub(flux$Sample,1,1) #start at first character and include one c
 flux$treat = str_sub(flux$Sample,3) #start at the third character and include all the rest of the characters
 flux$team = as.factor(flux$team) #makes this column into a factor
 flux$treat = as.numeric(flux$treat) #makes this column numeric
-
-
-#Makes a new data frame with only the Rb uptake data
-
-flux.Rb = subset(flux, treat > 16.5)
-#Gets rid of flux media control
-flux.Rb = subset(flux.Rb, treat < 20.5) 
-#makes a new column temporarily filled with 100 for each SW value
-flux.Rb$SW = 100 
 
 
 #Assigns correct salinity treatment based on our treatment codes
@@ -99,44 +93,93 @@ xyplot(Na~time, data = subset(flux.efflux, Animal == 1 ))
 xyplot(Na~time, data = subset(flux.efflux, Animal == 1 & time > 5)) #remove time zero (if needed)
 xyplot(Na~time, data = subset(flux.efflux, Animal == 1 & time != 20)) #remove time 20 (if needed)
 
-#Obtaining slope from animals 11 and 12 for Na
-#11
-xyplot(Na~time, data = subset(flux.efflux, Animal == 11 ))
-Na.11.lm = lm(Na~time, data = subset(flux.efflux, Animal == 11 ))
-anova(Na.11.lm)
-summary(Na.11.lm)
-coef(Na.11.lm)
-#12
-xyplot(Na~time, data = subset(flux.efflux, Animal == 12 ))
-Na.12.lm = lm(Na~time, data = subset(flux.efflux, Animal == 12 ))
-anova(Na.12.lm)
-summary(Na.12.lm)
-coef(Na.12.lm)
+#Setting SW as a character
+influx$SW = as.character(influx$SW)
 
-#Obtaining slope from animals 11 and 12 for NH4
-#11
-xyplot(NH4~time, data = subset(flux.efflux, Animal == 11 ))
-NH4.11.lm = lm(NH4~time, data = subset(flux.efflux, Animal == 11 ))
-anova(NH4.11.lm)
-summary(NH4.11.lm)
-coef(NH4.11.lm)
-#12
-xyplot(NH4~time, data = subset(flux.efflux, Animal == 12 ))
-NH4.12.lm = lm(NH4~time, data = subset(flux.efflux, Animal == 12 ))
-anova(NH4.12.lm)
-summary(NH4.12.lm)
-coef(NH4.12.lm)
+#Removing the 2 outliers using subset function (one at ~45, the other at ~2.9)
+influx.1 <- subset(influx, Rb < 1)
+View(influx.1)
 
-#Obtaining slope from animals 11 and 12 for K
-#11
-xyplot(K~time, data = subset(flux.efflux, Animal == 11 ))
-K.11.lm = lm(K~time, data = subset(flux.efflux, Animal == 11 ))
-anova(K.11.lm)
-summary(K.11.lm)
-coef(K.11.lm)
-#12
-xyplot(K~time, data = subset(flux.efflux, Animal == 12 & time!=20))
-K.12.lm = lm(K~time, data = subset(flux.efflux, Animal == 12 & time !=20 ))
-anova(K.12.lm)
-summary(K.12.lm)
-coef(K.12.lm)
+#Influx Plot
+ggplot(influx.1, aes(x=SW, y=Rb))+
+  geom_boxplot()+
+  ylab("Rb influx (μmol/g BW * hr)")+
+  xlab("Salt Water Concentration %")+
+  theme_bw()
+
+#Statistics
+favstats(Rb~SW, data = influx.1)
+
+influx.1.lm = lm(Rb~SW, data = influx.1)
+anova(influx.1.lm)
+summary(influx.1.lm)
+
+#Counting the number of observations
+nrow(filter(influx.1, SW == 20))
+nrow(filter(influx.1, SW == 100))
+
+#Creating a working df for ion efflux slope data
+working.efflux.data.vars <- c("SW","Na","NH4","K")
+working.efflux.data <- ion_efflux[working.efflux.data.vars]
+View(working.efflux.data)
+
+long.efflux.data <- working.efflux.data %>% gather(ion, rate, Na:K)
+View(long.efflux.data)
+
+long.efflux.data$SW = as.character(long.efflux.data$SW)
+
+
+ggplot(long.efflux.data, aes(x=ion, y=rate, fill = SW)) +
+  geom_boxplot()+
+  facet_wrap(~ion, scales = "free")+
+  ylab("Efflux Rate (μmol/g BW * hr)")+
+  xlab("Ion")
+
+#Statistics
+
+#Favstats
+favstats(rate~ion|SW, data = long.efflux.data)
+#Develop linear model for ANOVA
+efflux.lm = lm(rate~ion*SW, data = long.efflux.data)
+#Summary
+summary(effulx.lm)
+#ANOVA
+anova(efflux.lm)
+TukeyHSD(efflux.lm)
+
+
+#creating a working df for ion efflux conc data
+working.efflux.conc.data.vars <- c("SW","Na", "NH4", "K","Mg","Ca","time")
+working.efflux.conc.data <- flux.efflux[working.efflux.conc.data.vars]
+View(working.efflux.conc.data)
+
+long.efflux.conc.data <- working.efflux.conc.data %>% gather(ion, conc, Na:Ca)
+View(long.efflux.conc.data)
+efflux.conc.end <-subset(long.efflux.conc.data, long.efflux.conc.data$time > 25)
+
+long.efflux.conc.data$time = as.character(long.efflux.conc.data$time)
+long.efflux.conc.data$SW = as.character(long.efflux.conc.data$SW)
+
+ggplot(long.efflux.conc.data, aes(x=ion, y=conc, fill=time)) +
+  geom_boxplot()+
+  facet_wrap(~ion, scales = "free")+
+  ylab("[Ion] (μM)")+
+  xlab("Ion")
+
+View(efflux.conc.end)
+
+ggplot(efflux.conc.end, aes(x=ion, y=conc, fill=SW)) +
+  geom_boxplot()+
+  facet_wrap(~ion, scales = "free")+
+  ylab("[Ion] (μM)")+
+  xlab("Ion")
+
+#Favstats
+favstats(conc~ion|SW, data = efflux.conc.end)
+#Develop linear model for ANOVA
+efflux.end.lm = lm(conc~ion*SW, data = efflux.conc.end)
+#ANOVA
+anova(efflux.end.lm)
+TukeyHSD(efflux.end.lm)
+
+
